@@ -1,6 +1,5 @@
 import React from 'react';
 import './App.scss';
-import { Clock } from './clock/clock';
 
 function getRandomName(): string {
   const value = Date.now().toString().slice(-4);
@@ -8,8 +7,72 @@ function getRandomName(): string {
   return `Clock-${value}`;
 }
 
-export class App extends React.Component {
-  state = {
+interface ClockProps {
+  name: string;
+}
+
+interface ClockState {
+  time: Date;
+}
+
+class Clock extends React.Component<ClockProps, ClockState> {
+  state: ClockState = {
+    time: new Date(
+      new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }),
+    ),
+  };
+
+  intervalId?: number;
+
+  componentDidMount() {
+    this.intervalId = window.setInterval(() => {
+      const now = new Date(
+        new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }),
+      );
+
+      this.setState({ time: now });
+
+      const formattedTime = now.toUTCString().slice(-12, -4);
+
+      // eslint-disable-next-line no-console
+      console.log(formattedTime);
+    }, 1000);
+  }
+
+  componentDidUpdate(prevProps: ClockProps) {
+    if (prevProps.name !== this.props.name) {
+      // eslint-disable-next-line no-console
+      console.warn(`Renamed from ${prevProps.name} to ${this.props.name}`);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+  }
+
+  render() {
+    const { name } = this.props;
+    const { time } = this.state;
+    const formattedTime = time.toUTCString().slice(-12, -4);
+
+    return (
+      <div className="Clock">
+        <strong className="Clock__name">{name}</strong> time is{' '}
+        <span className="Clock__time">{formattedTime}</span>
+      </div>
+    );
+  }
+}
+
+interface AppState {
+  hasClock: boolean;
+  clockName: string;
+}
+
+export class App extends React.Component<{}, AppState> {
+  state: AppState = {
     hasClock: true,
     clockName: 'Clock-0',
   };
